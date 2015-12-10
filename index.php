@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: application/json');
 define('WEBSITE', 'http://www.studentenwerk-oldenburg.de/de');
 require_once ('simple_html_dom.php');
 require_once ('functions.php');
