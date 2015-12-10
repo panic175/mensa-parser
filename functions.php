@@ -21,6 +21,7 @@ function getLunchObj($url) {
     
     // this week
     $lunches['name'] = trim(getHTMLObj($url)->find('.breadcrumb', 0)->find('span[itemprop=name]', -1)->plaintext);
+    $lunches['url'] = urlencode($url);
     $lunches['menu'] = tablesToArr($lunchPage, 0);
     //$lunches[] = tableObjToArr($lunchPage, 141);
     
