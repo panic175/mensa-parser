@@ -1,32 +1,16 @@
 <?php
 
 /**
- * Parst eine URL und gibt deren HTML als Objekt aus. Wenn es eine relative URL ist wird die Konstante WEBSITE davor gehängt
- * @param  [type] $url [description]
- * @return [type]      [description]
- */
-function getHTMLObj($url) {
-    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) $url = WEBSITE . $url;
-    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) return false;
-    $output = file_get_html($url);
-    return $output;
-}
-
-/**
  * Parst die unterschiedlichen Tabellen einer Seite
  * @param  [type] $url [description]
  * @return [type]      [description]
  */
 function getDetailView($url) {
-    $lunchPage = getHTMLObj($url)->find('div[itemprop=articleBody] div.moduletable', 0);
+    $details['name'] = trim(getHTMLObj($url)->find('.breadcrumb', 0)->find('span[itemprop=name]', -1)->plaintext);
+    $details['weburl'] = $url;
+    $details['menu'] = tablesToArr(getHTMLObj($url)->find('div[itemprop=articleBody] div.moduletable', 0));
     
-    // this week
-    $lunches['name'] = trim(getHTMLObj($url)->find('.breadcrumb', 0)->find('span[itemprop=name]', -1)->plaintext);
-    $lunches['weburl'] = $url;
-    $lunches['menu'] = tablesToArr($lunchPage, 0);
-    //$lunches[] = tableObjToArr($lunchPage, 141);
-    
-    return $lunches;
+    return $details;
 }
 
 /**
@@ -72,7 +56,8 @@ function tableToArr($table, $dates) {
                     if (empty($article)) continue;
                     $title = $article->plaintext;
                     $allergies = $price = array();
-                    preg_match('#\((.*?)\)#', $title, $allergies);
+                    
+                    preg_match('#\((.*?)\)#', $title, $allergies); // Matcht eingeklammerten Text
                     
                     // Parse Allergiestoffe
                     if (array_key_exists(1, $allergies)) $title = str_replace('(' . $allergies[1] . ')', '', $title);
@@ -80,7 +65,7 @@ function tableToArr($table, $dates) {
                     // entferne Allergiestoffe aus Titel
                     $allergies = (array_key_exists(1, $allergies) ? explode(",", $allergies[1]) : NULL);
                     
-                    preg_match('/(\d{1,2},\d{2})/', $title, $price);
+                    preg_match('/(\d{1,2},\d{2})/', $title, $price); // Matcht Dezimalzahlen
                     
                     // Parse den Preis
                     if (array_key_exists(1, $price)) $title = str_replace($price[1], '', $title); // entferne Preis aus Titel
@@ -135,47 +120,15 @@ function getOverView($url) {
 }
 
 /**
- * Ermittelt die Datums zwischen zwei Datums
- * @param  string $strDateFrom d.m.y 20.10.05
- * @param  string $strDateTo   d.m.y 20.10.05
- * @return array               Array of strings (Y-m-d 2005-10-20)
+ * Parst eine URL und gibt deren HTML als Objekt aus. Wenn es eine relative URL ist wird die Konstante WEBSITE davor gehängt
+ * @param  [type] $url [description]
+ * @return [type]      [description]
  */
-function createDateRangeArray($strDateFrom, $strDateTo) {
-    
-    $aryRange = array();
-    
-    $iDateFrom = mktime(1, 0, 0, substr($strDateFrom, 3, 2), substr($strDateFrom, 0, 2), substr($strDateFrom, 6, 2));
-    $iDateTo = mktime(1, 0, 0, substr($strDateTo, 3, 2), substr($strDateTo, 0, 2), substr($strDateTo, 6, 2));
-    
-    if ($iDateTo >= $iDateFrom) {
-        array_push($aryRange, date('Y-m-d', $iDateFrom));
-        
-        // first entry
-        while ($iDateFrom < $iDateTo) {
-            $iDateFrom+= 86400;
-            
-            // add 24 hours
-            array_push($aryRange, date('Y-m-d', $iDateFrom));
-        }
-    }
-    return $aryRange;
-}
-
-/**
- * Sucht den letzten Punkt oder das letzte Komma und nutzt das als Dezimaltrennzeichen
- * @param  string $num 1,02 oder 1.02
- * @return float
- */
-function tofloat($num) {
-    $dotPos = strrpos($num, '.');
-    $commaPos = strrpos($num, ',');
-    $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos : ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
-    
-    if (!$sep) {
-        return floatval(preg_replace("/[^0-9]/", "", $num));
-    }
-    
-    return floatval(preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' . preg_replace("/[^0-9]/", "", substr($num, $sep + 1, strlen($num))));
+function getHTMLObj($url) {
+    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) $url = WEBSITE . $url;
+    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) return false;
+    $output = file_get_html($url);
+    return $output;
 }
 
 /**
@@ -247,6 +200,33 @@ function sanitize_title_with_dashes($title) {
 }
 
 /**
+ * Ermittelt die Datums zwischen zwei Datums
+ * @param  string $strDateFrom d.m.y 20.10.05
+ * @param  string $strDateTo   d.m.y 20.10.05
+ * @return array               Array of strings (Y-m-d 2005-10-20)
+ */
+function createDateRangeArray($strDateFrom, $strDateTo) {
+    
+    $aryRange = array();
+    
+    $iDateFrom = mktime(1, 0, 0, substr($strDateFrom, 3, 2), substr($strDateFrom, 0, 2), substr($strDateFrom, 6, 2));
+    $iDateTo = mktime(1, 0, 0, substr($strDateTo, 3, 2), substr($strDateTo, 0, 2), substr($strDateTo, 6, 2));
+    
+    if ($iDateTo >= $iDateFrom) {
+        array_push($aryRange, date('Y-m-d', $iDateFrom));
+        
+        // first entry
+        while ($iDateFrom < $iDateTo) {
+            $iDateFrom+= 86400;
+            
+            // add 24 hours
+            array_push($aryRange, date('Y-m-d', $iDateFrom));
+        }
+    }
+    return $aryRange;
+}
+
+/**
  * Converts all accent characters to ASCII characters.
  *
  * If there are no accent characters, then the string given is just returned.
@@ -306,4 +286,21 @@ function seems_utf8($str) {
         }
     }
     return true;
+}
+
+/**
+ * Sucht den letzten Punkt oder das letzte Komma und nutzt das als Dezimaltrennzeichen
+ * @param  string $num 1,02 oder 1.02
+ * @return float
+ */
+function tofloat($num) {
+    $dotPos = strrpos($num, '.');
+    $commaPos = strrpos($num, ',');
+    $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos : ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
+    
+    if (!$sep) {
+        return floatval(preg_replace("/[^0-9]/", "", $num));
+    }
+    
+    return floatval(preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' . preg_replace("/[^0-9]/", "", substr($num, $sep + 1, strlen($num))));
 }
