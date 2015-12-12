@@ -16,7 +16,7 @@ function getHTMLObj($url) {
  * @param  [type] $url [description]
  * @return [type]      [description]
  */
-function getLunchObj($url) {
+function getDetailView($url) {
     $lunchPage = getHTMLObj($url)->find('div[itemprop=articleBody] div.moduletable', 0);
     
     // this week
@@ -109,13 +109,18 @@ function tableToArr($table, $dates) {
  * @param  [type] $url URI der Übersicht
  * @return [type]      [description]
  */
-function getMensaUris($uri) {
+function getOverView($url) {
     $links = array();
     $firstTitle = true;
-    foreach (getHTMLObj($uri)->find('div[itemprop=articleBody] tr') as $row) {
+    foreach (getHTMLObj($url)->find('div[itemprop=articleBody] tr') as $row) {
         $link = $row->find('td a', 0);
         if ($link) {
-            $links[$link->attr['title']] = $link->attr['href'];
+            $links[sanitize_title_with_dashes($link->attr['title'])] = array(
+                'name' => $link->attr['title'],
+                'url' => SCRIPT_URL.str_replace(explode("%s", DETAILVIEW_URI), "", $link->attr['href']),
+                'weburl' => WEBSITE.$link->attr['href']
+            );
+            
         } 
         elseif ($firstTitle && $row->find('td h5', 0)) {
             $firstTitle = false;
@@ -191,10 +196,13 @@ function getJson($url, $age = '120 minutes') {
         fclose($fh);
         unlink($cacheFile);
     }
-    
-    // Generierung der JSON Daten
-    $json = json_encode(getLunchObj($url));
-    
+    if ($url == WEBSITE.OVERVIEW_URI) {
+        $json = json_encode(getOverView($url));
+
+    } else {
+        // Generierung der JSON Daten
+        $json = json_encode(getDetailView($url));
+    }
     // Speicherung
     $fh = fopen($cacheFile, 'w');
     fwrite($fh, $json);

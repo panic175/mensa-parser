@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^mensa/(.*)/$ index.php?mensa=$1 [L,QSA]
