@@ -56,14 +56,13 @@ function tableToArr($table, $dates) {
                     if (empty($article)) continue;
                     $title = $article->plaintext;
                     $allergies = $price = array();
-                    
-                    preg_match('#\((.*?)\)#', $title, $allergies); // Matcht eingeklammerten Text
-                    
+
+                    preg_match('/\((.*?)(,.*?)*\)*$/', $title, $allergies); // Matcht eingeklammerten Text
                     // Parse Allergiestoffe
-                    if (array_key_exists(1, $allergies)) $title = str_replace('(' . $allergies[1] . ')', '', $title);
+                    if (array_key_exists(1, $allergies)) $title = str_replace($allergies[0], '', $title);
                     
                     // entferne Allergiestoffe aus Titel
-                    $allergies = (array_key_exists(1, $allergies) ? explode(",", $allergies[1]) : NULL);
+                    $allergies = (array_key_exists(1, $allergies) ? explode(",", trim($allergies[0], "()")) : NULL);
                     
                     preg_match('/(\d{1,2},\d{2})/', $title, $price); // Matcht Dezimalzahlen
                     
