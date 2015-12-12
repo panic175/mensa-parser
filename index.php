@@ -8,6 +8,7 @@ define('SCRIPT_URL', "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
 require_once ('simple_html_dom.php');
 require_once ('functions.php');
 
+
 $output = '';
 if (OVERVIEW) {
 	$url = WEBSITE.OVERVIEW_URI;

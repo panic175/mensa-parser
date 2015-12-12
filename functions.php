@@ -8,7 +8,8 @@
 function getHTMLObj($url) {
     if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) $url = WEBSITE . $url;
     if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) return false;
-    return file_get_html($url);
+    $output = file_get_html($url);
+    return $output;
 }
 
 /**
@@ -21,7 +22,7 @@ function getDetailView($url) {
     
     // this week
     $lunches['name'] = trim(getHTMLObj($url)->find('.breadcrumb', 0)->find('span[itemprop=name]', -1)->plaintext);
-    $lunches['url'] = urlencode($url);
+    $lunches['weburl'] = $url;
     $lunches['menu'] = tablesToArr($lunchPage, 0);
     //$lunches[] = tableObjToArr($lunchPage, 141);
     
@@ -115,9 +116,10 @@ function getOverView($url) {
     foreach (getHTMLObj($url)->find('div[itemprop=articleBody] tr') as $row) {
         $link = $row->find('td a', 0);
         if ($link) {
-            $links[sanitize_title_with_dashes($link->attr['title'])] = array(
+            $slug = str_replace(explode("%s", DETAILVIEW_URI), "", $link->attr['href']);
+            $links[sanitize_title_with_dashes($slug)] = array(
                 'name' => $link->attr['title'],
-                'url' => SCRIPT_URL.str_replace(explode("%s", DETAILVIEW_URI), "", $link->attr['href']),
+                'url' => SCRIPT_URL.$slug,
                 'weburl' => WEBSITE.$link->attr['href']
             );
             

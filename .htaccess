@@ -1,2 +1,2 @@
 RewriteEngine On
-RewriteRule ^mensa/(.*)/$ index.php?mensa=$1 [L,QSA]
+RewriteRule ^([a-z0-9-]+)/?$ index.php?mensa=$1
