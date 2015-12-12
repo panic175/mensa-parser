@@ -57,7 +57,7 @@ function tableToArr($table, $dates) {
                     $title = $article->plaintext;
                     $allergies = $price = array();
 
-                    preg_match('/\((.*?)(,.*?)*\)*$/', $title, $allergies); // Matcht eingeklammerten Text
+                    preg_match('/\(([0-9A-Za-z,]+)\)/', $title, $allergies); // Matcht eingeklammerten Text
                     // Parse Allergiestoffe
                     if (array_key_exists(1, $allergies)) $title = str_replace($allergies[0], '', $title);
                     
