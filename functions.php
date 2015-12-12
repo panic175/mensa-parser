@@ -64,7 +64,7 @@ function tableToArr($table, $dates) {
         foreach ($row->find('td') as $clmNo => $clm) {
             if ($clmNo == 0) {
                 $categoryPrice = trim(preg_replace('/^\D*/', '', $clm->plaintext));
-                $category = trim(str_replace(array($categoryPrice, "-\r\n ", "\t"), '', $clm->plaintext));
+                $category = trim(str_replace(array($categoryPrice, "-\r\n ", "\t", "\r", "\n", "           ", "    "), '', $clm->plaintext));
             } 
             else {
                 
